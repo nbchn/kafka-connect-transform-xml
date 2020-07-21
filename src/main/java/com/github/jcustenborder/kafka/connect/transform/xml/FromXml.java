@@ -32,12 +32,19 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Unmarshaller;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Map;
 
 @Title("FromXML")
@@ -52,6 +59,7 @@ public abstract class FromXml<R extends ConnectRecord<R>> extends BaseKeyValueTr
   FromXmlConfig config;
   JAXBContext context;
   Unmarshaller unmarshaller;
+  Transformer transformer;
   XSDCompiler compiler;
 
   protected FromXml(boolean isKey) {
@@ -74,10 +82,20 @@ public abstract class FromXml<R extends ConnectRecord<R>> extends BaseKeyValueTr
 
   @Override
   protected SchemaAndValue processString(R record, org.apache.kafka.connect.data.Schema inputSchema, String input) {
-    try (Reader reader = new StringReader(input)) {
+    try {
+
+      Reader reader = new StringReader(input);
+
+      if (this.transformer != null) {
+        StringWriter writer = new StringWriter();
+        StreamResult result = new StreamResult(writer);
+        this.transformer.transform(new StreamSource(reader), result);
+        reader = new StringReader(writer.toString());
+      }
+
       Object element = this.unmarshaller.unmarshal(reader);
       return schemaAndValue(element);
-    } catch (IOException | JAXBException e) {
+    } catch (JAXBException | TransformerException e) {
       throw new DataException("Exception thrown while processing xml", e);
     }
   }
@@ -85,11 +103,19 @@ public abstract class FromXml<R extends ConnectRecord<R>> extends BaseKeyValueTr
   @Override
   protected SchemaAndValue processBytes(R record, org.apache.kafka.connect.data.Schema inputSchema, byte[] input) {
     try (InputStream inputStream = new ByteArrayInputStream(input)) {
-      try (Reader reader = new InputStreamReader(inputStream)) {
-        Object element = this.unmarshaller.unmarshal(reader);
-        return schemaAndValue(element);
+
+      Reader reader = new InputStreamReader(inputStream);
+
+      if (this.transformer != null) {
+        StringWriter writer = new StringWriter();
+        StreamResult result = new StreamResult(writer);
+        this.transformer.transform(new StreamSource(reader), result);
+        reader = new StringReader(writer.toString());
       }
-    } catch (IOException | JAXBException e) {
+
+      Object element = this.unmarshaller.unmarshal(reader);
+      return schemaAndValue(element);
+    } catch (IOException | JAXBException | TransformerException e) {
       throw new DataException("Exception thrown while processing xml", e);
     }
   }
@@ -137,6 +163,15 @@ public abstract class FromXml<R extends ConnectRecord<R>> extends BaseKeyValueTr
     } catch (JAXBException e) {
       throw new IllegalStateException(e);
     }
+
+    if (this.config.transformerUrl != null) {
+      try {
+        this.transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(this.config.transformerUrl));
+      } catch (TransformerConfigurationException e) {
+        throw new IllegalStateException(e);
+      }
+    }
+
   }
 
 
