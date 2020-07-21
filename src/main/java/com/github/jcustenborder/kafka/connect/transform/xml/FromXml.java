@@ -164,7 +164,7 @@ public abstract class FromXml<R extends ConnectRecord<R>> extends BaseKeyValueTr
       throw new IllegalStateException(e);
     }
 
-    if (this.config.transformerUrl != null) {
+    if (!this.config.transformerUrl.isEmpty()) {
       try {
         this.transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(this.config.transformerUrl));
       } catch (TransformerConfigurationException e) {

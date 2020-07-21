@@ -96,6 +96,7 @@ class FromXmlConfig extends AbstractConfig {
             ConfigKeyBuilder.of(TRANSFORMER_PATH_CONFIG, ConfigDef.Type.STRING)
                 .documentation(PACKAGE_DOC)
                 .importance(ConfigDef.Importance.LOW)
+                .defaultValue("")
                 .build()
         );
   }
