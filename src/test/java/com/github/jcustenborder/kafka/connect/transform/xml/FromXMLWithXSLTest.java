@@ -35,10 +35,10 @@ public class FromXMLWithXSLTest {
     @BeforeEach
     public void before() {
         String xsdPath = "file:src/test/resources/com/github/jcustenborder/kafka/connect/transform/xml/cd_catalog_transformed_schema.xsd";
-        String xslPath = "file:src/test/resources/com/github/jcustenborder/kafka/connect/transform/xml/cd_catalog_transformer.xsl";
+        String xsltPath = "file:src/test/resources/com/github/jcustenborder/kafka/connect/transform/xml/cd_catalog_transformer.xsl";
         Map<String, Object> settings = new HashMap<>();
         settings.put("schema.path", xsdPath);
-        settings.put("xsl.transformer.path", xslPath);
+        settings.put("xslt.transformer.path", xsltPath);
         this.transform = new FromXml.Value<>();
         this.transform.configure(settings);
     }

@@ -82,20 +82,12 @@ public abstract class FromXml<R extends ConnectRecord<R>> extends BaseKeyValueTr
 
   @Override
   protected SchemaAndValue processString(R record, org.apache.kafka.connect.data.Schema inputSchema, String input) {
-    try {
-
-      Reader reader = new StringReader(input);
-
-      if (this.transformer != null) {
-        StringWriter writer = new StringWriter();
-        StreamResult result = new StreamResult(writer);
-        this.transformer.transform(new StreamSource(reader), result);
-        reader = new StringReader(writer.toString());
-      }
-
-      Object element = this.unmarshaller.unmarshal(reader);
+    try (Reader reader = new StringReader(input)) {
+      StreamResult result = new StreamResult(new StringWriter());
+      this.transformer.transform(new StreamSource(reader), result);
+      Object element = this.unmarshaller.unmarshal(new StringReader(result.getWriter().toString()));
       return schemaAndValue(element);
-    } catch (JAXBException | TransformerException e) {
+    } catch (JAXBException | TransformerException | IOException e) {
       throw new DataException("Exception thrown while processing xml", e);
     }
   }
@@ -164,12 +156,12 @@ public abstract class FromXml<R extends ConnectRecord<R>> extends BaseKeyValueTr
       throw new IllegalStateException(e);
     }
 
-    if (!this.config.transformerUrl.isEmpty()) {
-      try {
-        this.transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(this.config.transformerUrl));
-      } catch (TransformerConfigurationException e) {
-        throw new IllegalStateException(e);
-      }
+    try {
+      this.transformer = this.config.transformerUrl.isEmpty() ?
+              TransformerFactory.newInstance().newTransformer() :
+              TransformerFactory.newInstance().newTransformer(new StreamSource(this.config.transformerUrl));
+    } catch (TransformerConfigurationException e) {
+      throw new IllegalStateException(e);
     }
 
   }

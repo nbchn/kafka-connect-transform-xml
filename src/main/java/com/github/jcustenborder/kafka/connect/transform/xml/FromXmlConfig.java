@@ -31,13 +31,13 @@ import java.util.Map;
 class FromXmlConfig extends AbstractConfig {
 
   public static final String SCHEMA_PATH_CONFIG = "schema.path";
-  public static final String TRANSFORMER_PATH_CONFIG = "xsl.transformer.path";
+  public static final String TRANSFORMER_PATH_CONFIG = "xslt.transformer.path";
   public static final String PACKAGE_CONFIG = "package";
   public static final String XJC_OPTIONS_STRICT_CHECK_CONFIG = "xjc.options.strict.check.enabled";
   public static final String XJC_OPTIONS_AUTOMATIC_NAME_CONFLICT_RESOLUTION_ENABLED_CONFIG = "xjc.options.automatic.name.conflict.resolution.enabled";
   public static final String XJC_OPTIONS_VERBOSE_CONFIG = "xjc.options.verbose.enabled";
   static final String SCHEMA_PATH_DOC = "Urls to the schemas to load. http and https paths are supported";
-  static final String TRANSFORMER_PATH_DOC = "Url to the xls transformer file to load.";
+  static final String TRANSFORMER_PATH_DOC = "Url to the xslt transformer file to load.";
   static final String PACKAGE_DOC = "The java package xjc will use to generate the source code in. This name will be applied to the resulting schema";
   static final String XJC_OPTIONS_STRICT_CHECK_DOC = "xjc.options.strict.check.enabled";
   static final String XJC_OPTIONS_AUTOMATIC_NAME_CONFLICT_RESOLUTION_ENABLED_DOC = "xjc.options.automatic.name.conflict.resolution.enabled";
